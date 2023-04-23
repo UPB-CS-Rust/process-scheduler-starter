@@ -10,4 +10,4 @@ Your job is:
    - `round_robin(...)`
    - `priority_queue(...)`
    - `cfs(...)`
-3. Test them using the `runner` create by using them in `runner/src/main.rs`.
+3. Test them using the `runner` crate by using them in `runner/src/main.rs`.
