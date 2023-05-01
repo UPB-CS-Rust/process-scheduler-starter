@@ -44,7 +44,7 @@ impl Display for Log {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "{}", self.decision).unwrap();
         // writeln!(f, "===== Processes =====");
-        writeln!(f, "PID\tSTATE\t\tTOTAL\tSYSCALL\tEXECUTE").unwrap();
+        writeln!(f, "PID\tSTATE\t\tPRI\tTOTAL\tSYSCALL\tEXECUTE\tEXTRA").unwrap();
         let mut pids = self.processes.keys().collect::<Vec<&Pid>>();
         pids.sort();
         for pid in pids.into_iter() {
@@ -76,14 +76,28 @@ pub struct ProcessInfo {
 
     /// The process timings (total time, system call time, running time).
     pub timings: (usize, usize, usize),
+
+    /// The process priority
+    pub priority: i8,
+
+    /// Extra details about the process
+    pub extra: String,
 }
 
 impl ProcessInfo {
-    fn new(pid: Pid, state: ProcessState, timings: (usize, usize, usize)) -> ProcessInfo {
+    fn new(
+        pid: Pid,
+        state: ProcessState,
+        timings: (usize, usize, usize),
+        priority: i8,
+        extra: String,
+    ) -> ProcessInfo {
         ProcessInfo {
             pid,
             state,
             timings,
+            priority,
+            extra,
         }
     }
 }
@@ -92,8 +106,14 @@ impl Display for ProcessInfo {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{}\t{}\t\t{}\t{}\t{}",
-            self.pid, self.state, self.timings.0, self.timings.1, self.timings.2
+            "{}\t{}\t\t{}\t{}\t{}\t{}\t{}",
+            self.pid,
+            self.state,
+            self.priority,
+            self.timings.0,
+            self.timings.1,
+            self.timings.2,
+            self.extra
         )
     }
 }
@@ -209,7 +229,13 @@ impl<S: Scheduler + 'static> Processor<S> {
                 for process in scheduler.list() {
                     process_map.insert(
                         process.pid(),
-                        ProcessInfo::new(process.pid(), process.state(), process.timings()),
+                        ProcessInfo::new(
+                            process.pid(),
+                            process.state(),
+                            process.timings(),
+                            process.priority(),
+                            process.extra(),
+                        ),
                     );
                 }
                 (*self.logs.lock().unwrap()).push(Log::new(next, None, process_map));
