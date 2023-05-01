@@ -1,9 +1,11 @@
-use std::{fmt::Display, num::NonZeroUsize, ops::Add};
+use std::fmt::{self, Display};
+use std::num::NonZeroUsize;
+use std::ops::Add;
 
 /// The PID of a process
 ///
 /// The PID cannot be 0, PIDs start from 1.
-#[derive(Debug, PartialEq, Eq, Copy, Clone, Hash, Ord, PartialOrd)]
+#[derive(PartialEq, Eq, Copy, Clone, Hash, Ord, PartialOrd)]
 #[repr(transparent)]
 pub struct Pid(NonZeroUsize);
 
@@ -20,6 +22,12 @@ impl PartialEq<usize> for Pid {
 }
 
 impl Display for Pid {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl fmt::Debug for Pid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }
@@ -249,4 +257,10 @@ pub trait Process {
 
     /// Returns process timings as a tuple of (total, syscalls, execution)
     fn timings(&self) -> (usize, usize, usize);
+
+    /// Returns the process priority
+    fn priority(&self) -> i8;
+
+    /// Returns details information
+    fn extra(&self) -> String;
 }

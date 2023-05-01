@@ -4,7 +4,7 @@
 //! for each scheduler and export it here
 //! like
 //!
-//! ```
+//! ```ignore
 //! mod scheduler_name
 //! pub use scheduler_name::SchedulerName;
 //! ```
